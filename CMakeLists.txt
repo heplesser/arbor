@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
+include(CMakeDependentOption)
 
 file(READ VERSION FULL_VERSION_STRING)
 string(STRIP "${FULL_VERSION_STRING}" FULL_VERSION_STRING)
@@ -198,6 +199,10 @@ install(TARGETS arbornml-public-deps EXPORT arbornml-targets)
 # External libraries in `ext` sub-directory: json, tinyopt and randon123.
 # Creates interface libraries `ext-json`, `ext-tinyopt` and `ext-random123`
 
+option(ARB_USE_BUNDLED_JSON "Use bundled Niels Lohmann's json library." ON)
+if(NOT ARB_USE_BUNDLED_JSON)
+  find_package(nlohmann_json)
+endif()
 add_subdirectory(ext)
 
 # Keep track of packages we need to add to the generated CMake config
@@ -233,6 +238,7 @@ endif()
 #----------------------------------------------------------
 option(ARB_WITH_PYTHON "enable python front end" OFF)
 if(ARB_WITH_PYTHON)
+    cmake_dependent_option(ARB_USE_BUNDLED_PYBIND11 "Use bundled pybindd1" ON "ARB_WITH_PYTHON" OFF)
     # Required to link the dynamic libraries for python modules.
     # Effectively adds '-fpic' flag to CXX_FLAGS.
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
